@@ -5,19 +5,18 @@ namespace Assets.Scripts
 {
 	public class EnemyWeapon : MonoBehaviour
 	{
-
-		[SerializeField]
-		Projectile projectilePrefab;
 		[SerializeField]
 		Transform projectileOrigin;
 		[SerializeField]
 		Transform targetObj;
+		[SerializeField]
+		SpawnProjectile attackAbility;
 
-		IDamageDealer owner;
+		Creature owner;
 
 		private void Awake()
 		{
-			owner = GetComponent<IDamageDealer>();
+			owner = GetComponent<Creature>();
 		}
 
 		float timeSinceLastShot;
@@ -25,20 +24,12 @@ namespace Assets.Scripts
 		private void Update()
 		{
 			timeSinceLastShot += Time.deltaTime;
-			if (timeSinceLastShot > owner.Stats.AttackSpeed)
+			if (timeSinceLastShot > attackAbility.Cooldown)
 			{
-				//Spawn bullet
-				SpawnBullet();
-				timeSinceLastShot -= owner.Stats.AttackSpeed;
+				attackAbility.UseAbility(owner, projectileOrigin.position, targetObj.position);
+				timeSinceLastShot -= attackAbility.Cooldown;
 			}
 
 		}
-
-		private void SpawnBullet()
-		{
-			var newBullet = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-			newBullet.Initialize(targetObj.position - transform.position, owner.Stats.ProjectileSpeed, owner);
-		}
-
 	}
 }

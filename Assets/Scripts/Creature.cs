@@ -1,23 +1,20 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Assets.Scripts
+
+public class Creature : MonoBehaviour
 {
-	public class Creature : MonoBehaviour, IDamageDealer, IDamageTaker
+	public Rigidbody Body { get => myBody; }
+	Rigidbody myBody;
+
+	public Stats Stats { get => stats; }
+
+	[SerializeField]
+	Stats stats;
+
+	private void Awake()
 	{
-		IDamageModifier[] IDamageDealer.Modifiers => dealDamageModifiers;
-
-		IDamageModifier[] IDamageTaker.Modifiers => takeDamageModifiers;
-
-		Stats IDamageDealer.Stats => stats;
-		Stats IDamageTaker.Stats => stats;
-
-		[SerializeField]
-		Stats stats;
-
-		//[SerializeField]
-		IDamageModifier[] dealDamageModifiers = new IDamageModifier[0];
-		//[SerializeField]
-		IDamageModifier[] takeDamageModifiers = new IDamageModifier[0];
+		myBody = GetComponent<Rigidbody>();	
 	}
+
 }

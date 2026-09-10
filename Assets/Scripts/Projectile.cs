@@ -1,38 +1,102 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-namespace Assets.Scripts
+
+public class Projectile : MonoBehaviour
 {
-	public class Projectile : MonoBehaviour
+	Rigidbody myBody;
+	Creature source;
+	DamageModifier[] abilityModifiers;
+	Vector3 moveVector;
+	int baseDamage;
+
+	bool isAOE;
+	float aoeRange;
+	bool isStopped = false;
+
+	const float EXPLOSION_TIME = 0.5f;
+
+	private void Awake()
 	{
-		Rigidbody myBody;
-		IDamageDealer source;
-		Vector3 moveVector;
+		myBody = GetComponent<Rigidbody>();
+	}
 
-		private void Awake()
-		{
-			myBody = GetComponent<Rigidbody>();
-		}
+	public void Initialize(
+		int baseDamage, 
+		Vector3 direction, 
+		float speed, 
+		Creature source, 
+		bool isAOE, 
+		float aoeRange, 
+		DamageModifier[] abilityModifiers = null)
+	{
+		this.source = source;
+		this.abilityModifiers = abilityModifiers;
+		this.isAOE = isAOE;
+		this.aoeRange = aoeRange;
+		this.baseDamage = baseDamage;
+		moveVector = direction.normalized * speed;
+	}
 
-		public void Initialize(Vector3 direction, float speed, IDamageDealer source)
-		{
-			this.source = source;
-			moveVector = direction.normalized * speed;
-		}
-
-		private void FixedUpdate()
+	private void FixedUpdate()
+	{
+		if (!isStopped)
 		{
 			myBody.MovePosition(transform.position + moveVector);
 		}
+	}
 
-		private void OnTriggerEnter(Collider collider)
+	private void OnTriggerEnter(Collider collider)
+	{
+		if (isAOE)
 		{
-			var damageTakerComp = collider.GetComponent<IDamageTaker>();
-			if (damageTakerComp != null)
-			{
-				EventBus<DamageDealtEventArgs>.Invoke(new DamageDealtEventArgs() { DamageDealer = source, DamageTaker = damageTakerComp, Target = collider.gameObject });
-			}
-			Destroy(gameObject);
+			DoAOE();
 		}
+		else
+		{
+			DoSingleTarget(collider);
+		}
+	}
+
+	private void DoSingleTarget(Collider collider)
+	{
+		var damageTaker = collider.GetComponent<Creature>();
+		if (damageTaker != null)
+		{
+			EventBus<DamageDealtEventArgs>.Invoke(new DamageDealtEventArgs() {BaseDamage = baseDamage, DamageDealerStats = source.Stats, DamageTakerStats = damageTaker.Stats, Target = collider.gameObject, AbilityModifiers = abilityModifiers });
+		}
+		Destroy(gameObject);
+	}
+
+	private void DoAOE()
+	{
+		isStopped = true;
+		var overlap = Physics.OverlapSphere(transform.position, aoeRange, ~myBody.excludeLayers.value);
+		foreach (var overlapCollider in overlap)
+		{
+			var damageTaker = overlapCollider.GetComponent<Creature>();
+			if (damageTaker != null)
+			{
+				EventBus<DamageDealtEventArgs>.Invoke(new DamageDealtEventArgs() { DamageDealerStats = source.Stats, DamageTakerStats = damageTaker.Stats, Target = overlapCollider.gameObject, AbilityModifiers = abilityModifiers });
+			}
+		}
+
+		StartCoroutine(Explode());
+	}
+
+	IEnumerator Explode()
+	{
+		var startingScale = transform.localScale;
+		var endScale = Vector3.one * aoeRange;
+
+		float elapsedTime = 0;
+
+		while (elapsedTime < EXPLOSION_TIME)
+		{
+			transform.localScale = Vector3.Lerp(startingScale, endScale, elapsedTime / EXPLOSION_TIME);
+			yield return null;
+			elapsedTime += Time.deltaTime;
+		}
+		Destroy(gameObject);
 	}
 }

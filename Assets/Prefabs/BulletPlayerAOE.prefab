@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3582040082541031741}
   - component: {fileID: 6075252406681706499}
   m_Layer: 0
-  m_Name: BulletEnemy
+  m_Name: BulletPlayerAOE
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.51, y: 1.33789, z: 5.68203}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -69,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9e9ce9b9e8a28b24cbb7aa5ee424cbe0, type: 2}
+  - {fileID: 2100000, guid: fe5e3cb19cd97094ca87998b6867a785, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -145,7 +145,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 183
+    m_Bits: 311
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1

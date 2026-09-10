@@ -1,27 +1,108 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
 	public class PlayerController : MonoBehaviour
 	{
-		Rigidbody myBody;
+		[SerializeField]
+		Ability[] abilities;
+		[SerializeField]
+		Ability mainAttackAbility;
 
-		const float SPEED = 5f;
+		Rigidbody myBody;
+		float[] abilityCooldowns;
+
+		float speed = 5f;
+		Vector2 inputVector;
+
+		bool isDashing = false;
+		float currentDashSpeed;
+		Vector3 dashDirection;
 
 		private void Awake()
 		{
 			myBody = GetComponent<Rigidbody>();
+			speed = GetComponent<Creature>().Stats.MoveSpeed;
+			abilityCooldowns = new float[abilities.Length];
+			EventBus<PlayerAbilitiesSet>.Invoke(new PlayerAbilitiesSet() { Abilities = abilities });
 		}
 
-		Vector2 inputVector;
+		
 
 		private void Update()
 		{
-			GetInputs();
+			GetMovementInputs();
+
+			UpdateAbilityCooldowns();	
+			if (isDashing)
+			{
+				UpdateDashSpeed();
+			} else
+			{
+				UseAbilities();
+			}
 		}
 
-		private void GetInputs()
+		private void UseAbilities()
+		{
+			if (Input.GetMouseButtonDown(0))
+			{
+				TryUseAbility(0);
+			}
+
+			if (Input.GetKeyDown(KeyCode.Alpha1))
+			{
+				TryUseAbility(1);
+			}
+
+			if (Input.GetKeyDown(KeyCode.Alpha2))
+			{
+				TryUseAbility(2);
+			}
+		}
+
+		private void UpdateAbilityCooldowns()
+		{
+			for (int i = 0; i < abilityCooldowns.Length; i++)
+			{
+				var remainingTime = abilityCooldowns[i];
+				if (remainingTime > 0)
+				{
+					var cooldownTimeMax = abilities[i].Cooldown;
+					if (cooldownTimeMax <= 0)
+					{
+						continue;
+					}
+
+					remainingTime -= Time.deltaTime;
+					abilityCooldowns[i] = remainingTime;
+					EventBus<AbilityCooldownEventArgs>.Invoke(new AbilityCooldownEventArgs() { AbilityIndex = i, CooldownPercentage = remainingTime / cooldownTimeMax });
+				}
+			}
+		}
+
+		public Vector3 GetWorldMousePos()
+		{
+			var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			Plane plane = new Plane(Vector3.up, Vector3.zero);
+			plane.Raycast(ray, out float dist);
+			return ray.GetPoint(dist);
+		}
+
+		private void TryUseAbility(int index)
+		{
+			if (index < abilities.Length && abilityCooldowns[index] <= 0)
+			{
+				var ability = abilities[index];
+				ability.UseAbility(GetComponent<Creature>(), transform.position, GetWorldMousePos());
+				abilityCooldowns[index] = ability.Cooldown;
+			}
+		}
+
+		private void GetMovementInputs()
 		{
 			int inputX = 0;
 			int inputY = 0;
@@ -44,13 +125,41 @@ namespace Assets.Scripts
 			}
 
 			inputVector = new Vector2(inputX, inputY).normalized;
+
+			if (!isDashing && Input.GetKeyDown(KeyCode.Space))
+			{
+				dashDirection = new Vector3(inputVector.x, 0, inputVector.y);
+				currentDashSpeed = 30f;
+				isDashing = true;
+				
+			}
 		}
 
 		private void FixedUpdate()
 		{
-			var moveVector = new Vector3(inputVector.x, 0, inputVector.y) * SPEED;
-			myBody.linearVelocity = moveVector;
+			UpdateMovement();
 		}
 
+		private void UpdateDashSpeed()
+		{
+			float speedReduction = 5f;
+			currentDashSpeed -= currentDashSpeed * speedReduction * Time.deltaTime;
+			if (currentDashSpeed <= 5f)
+			{
+				isDashing = false;
+			}
+		}
+
+		private void UpdateMovement()
+		{
+			if (isDashing)
+			{
+				myBody.linearVelocity = dashDirection * currentDashSpeed;
+			} else
+			{
+				var moveVector = new Vector3(inputVector.x, 0, inputVector.y) * speed;
+				myBody.linearVelocity = moveVector;
+			}
+		}
 	}
 }

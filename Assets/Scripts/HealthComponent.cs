@@ -6,14 +6,15 @@ namespace Assets.Scripts
 {
 	public class HealthComponent : MonoBehaviour
 	{
-		[SerializeField]
-		int startingHp = 100;
+
+		int startingHp;
 
 		int currentHp;
 
 
 		private void Awake()
 		{
+			startingHp = GetComponent<Creature>().Stats.BaseHealth;
 			currentHp = startingHp;
 			EventBus<ApplyDamageEventArgs>.Subscribe(OnTakeDamageEvent);
 			EventBus<HPUpdatedEventArgs>.Invoke(new HPUpdatedEventArgs() { OldHP = currentHp, NewHP = currentHp, MaxHP = startingHp, Owner = gameObject });
@@ -39,6 +40,11 @@ namespace Assets.Scripts
 				var oldHp = currentHp;
 				currentHp = Mathf.Max(0, currentHp - obj.Damage);
 				EventBus<HPUpdatedEventArgs>.Invoke(new HPUpdatedEventArgs() { OldHP = oldHp, NewHP = currentHp, MaxHP = startingHp, Owner = gameObject });
+				if (currentHp <=0)
+				{
+					//Death
+					Destroy(gameObject);
+				}
 			}
 
 		}

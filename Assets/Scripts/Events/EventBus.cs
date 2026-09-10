@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IEventArgs { }
 
-public struct ApplyDamageEventArgs:IEventArgs
+public struct ApplyDamageEventArgs : IEventArgs
 {
 	public int Damage;
 	public GameObject ApplyTo;
@@ -18,14 +18,27 @@ public struct HPUpdatedEventArgs : IEventArgs
 	public int MaxHP;
 }
 
-public struct DamageDealtEventArgs: IEventArgs
+public struct DamageDealtEventArgs : IEventArgs
 {
+	public int BaseDamage;
 	public GameObject Target;
-	public IDamageDealer DamageDealer;
-	public IDamageTaker DamageTaker;
+	public Stats DamageDealerStats;
+	public Stats DamageTakerStats;
+	public DamageModifier[] AbilityModifiers;
 }
 
-public static class EventBus<T> where T: IEventArgs
+public struct AbilityCooldownEventArgs : IEventArgs
+{
+	public float CooldownPercentage;
+	public int AbilityIndex;
+}
+
+public struct PlayerAbilitiesSet : IEventArgs
+{
+	public Ability[] Abilities;
+}
+
+public static class EventBus<T> where T : IEventArgs
 {
 	static Action<T> subDelegates;
 
@@ -131,7 +144,7 @@ public static class AssemblyUtil
 {
 	//enum AssemblyType { }
 
-	public static List<Type> GetInterfaceImplementors(Type @interface) 
+	public static List<Type> GetInterfaceImplementors(Type @interface)
 	{
 		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 

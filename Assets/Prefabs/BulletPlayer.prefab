@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3582040082541031741}
   - component: {fileID: 6075252406681706499}
   m_Layer: 0
-  m_Name: BulletEnemy
+  m_Name: BulletPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9e9ce9b9e8a28b24cbb7aa5ee424cbe0, type: 2}
+  - {fileID: 2100000, guid: 5941947e1bf5cae4e9ab5c2b30db4f3b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -145,7 +145,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 183
+    m_Bits: 311
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1

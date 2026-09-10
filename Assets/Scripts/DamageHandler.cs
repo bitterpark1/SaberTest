@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DamageHandler : MonoBehaviour
@@ -15,29 +16,35 @@ public class DamageHandler : MonoBehaviour
 
 	private void OnDamageDealt(DamageDealtEventArgs obj)
 	{
-		HandleDamage(
-			obj.DamageDealer.Stats.BaseDamage,
-			obj.Target,
-			obj.DamageDealer.Stats,
-			obj.DamageTaker.Stats,
-			obj.DamageDealer.Modifiers,
-			obj.DamageTaker.Modifiers);
+		HandleDamage(obj.BaseDamage, obj.Target, obj.DamageDealerStats, obj.DamageTakerStats, obj.AbilityModifiers);
 	}
 
-	void HandleDamage(int baseDamage, GameObject targetObj, Stats sourceStats, Stats targetStats, IDamageModifier[] sourceModifiers, IDamageModifier[] targetModifiers)
+	private void HandleDamage(int baseDamage, GameObject targetObj, Stats sourceStats, Stats targetStats, DamageModifier[] abilityModifiers)
 	{
-		if (baseDamage == 0)
+		int damage = baseDamage;
+		if (damage == 0)
 		{
 			return;
 		}
+		var sourceModifiers = sourceStats.DealerModifiers;
+		var targetModifiers = targetStats.TakerModifiers;
 
-		var allMods = new IDamageModifier[sourceModifiers.Length + targetModifiers.Length];
-		sourceModifiers.CopyTo(allMods, 0);
-		targetModifiers.CopyTo(allMods, sourceModifiers.Length);
+		var allMods = new List<DamageModifier>();
+		if (sourceModifiers != null)
+		{
+			allMods.AddRange(sourceModifiers);
+		}
+		if (targetModifiers != null)
+		{
+			allMods.AddRange(targetModifiers);
+		}
+		if (abilityModifiers != null)
+		{
+			allMods.AddRange(abilityModifiers);
+		}
 
-		Array.Sort(allMods, ComparePriority);
+		allMods.Sort(ComparePriority);
 
-		int damage = baseDamage;
 		foreach (var mod in allMods)
 		{
 			damage = mod.ModifyDamage(damage, sourceStats, targetStats);
@@ -49,68 +56,10 @@ public class DamageHandler : MonoBehaviour
 		}
 	}
 
-	int ComparePriority(IDamageModifier x, IDamageModifier y)
+	private int ComparePriority(DamageModifier x, DamageModifier y)
 	{
 		return x.Priority.CompareTo(y.Priority) * -1;
 	}
 }
 
-[System.Serializable]
-public struct Stats
-{
-	public int BaseDamage;
-	public float AttackSpeed;
-	public float ProjectileSpeed;
-	public float MoveSpeed;
-}
 
-public interface IDamageDealer
-{
-	IDamageModifier[] Modifiers { get; }
-	Stats Stats { get; }
-}
-public interface IDamageTaker
-{
-	IDamageModifier[] Modifiers { get; }
-	Stats Stats { get; }
-}
-
-public interface IDamageModifier
-{
-	public int Priority { get; }
-	public int ModifyDamage(int damage, Stats sourceStats, Stats targetStats);
-}
-
-[System.Serializable]
-public abstract class DamageModifier : IDamageModifier
-{
-	[SerializeField]
-	int priority;
-	public int Priority { get => priority; }
-
-	public abstract int ModifyDamage(int damage, Stats sourceStats, Stats targetStats);
-}
-
-public class DamageModifierMult : DamageModifier
-{
-	[SerializeField]
-	float multiplier;
-
-	public override int ModifyDamage(int damage, Stats sourceStats, Stats targetStats)
-	{
-		return Mathf.RoundToInt(damage * multiplier);
-	}
-}
-
-public class DamageModifierSet : DamageModifier
-{
-	[SerializeField]
-	int priority;
-	[SerializeField]
-	int setDamageToNumber;
-
-	public override int ModifyDamage(int damage, Stats sourceStats, Stats targetStats)
-	{
-		return setDamageToNumber;
-	}
-}

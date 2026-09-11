@@ -48,6 +48,11 @@ public class Projectile : MonoBehaviour
 
 	private void OnTriggerEnter(Collider collider)
 	{
+		if (isStopped)
+		{
+			return;
+		}
+
 		if (isAOE)
 		{
 			DoAOE();
@@ -63,7 +68,7 @@ public class Projectile : MonoBehaviour
 		var damageTaker = collider.GetComponent<Creature>();
 		if (damageTaker != null)
 		{
-			EventBus<DamageDealtEventArgs>.Invoke(new DamageDealtEventArgs() {BaseDamage = baseDamage, DamageDealerStats = source.Stats, DamageTakerStats = damageTaker.Stats, Target = collider.gameObject, AbilityModifiers = abilityModifiers });
+			CallDamageEvent(damageTaker, true);
 		}
 		Destroy(gameObject);
 	}
@@ -72,16 +77,32 @@ public class Projectile : MonoBehaviour
 	{
 		isStopped = true;
 		var overlap = Physics.OverlapSphere(transform.position, aoeRange, ~myBody.excludeLayers.value);
+		bool hitAlreadyRegistered = false;
+		
 		foreach (var overlapCollider in overlap)
 		{
 			var damageTaker = overlapCollider.GetComponent<Creature>();
 			if (damageTaker != null)
-			{
-				EventBus<DamageDealtEventArgs>.Invoke(new DamageDealtEventArgs() { DamageDealerStats = source.Stats, DamageTakerStats = damageTaker.Stats, Target = overlapCollider.gameObject, AbilityModifiers = abilityModifiers });
+			{	
+				CallDamageEvent(damageTaker, !hitAlreadyRegistered);
+				hitAlreadyRegistered = true;
 			}
 		}
 
 		StartCoroutine(Explode());
+	}
+
+	void CallDamageEvent(Creature target, bool countAsSeparateHit)
+	{
+		EventBus<TryDealDamageEventArgs>.Invoke(new TryDealDamageEventArgs()
+		{
+			BaseDamage = baseDamage,
+			DamageDealerStats = source.Stats,
+			DamageTakerStats = target.Stats,
+			Target = target.gameObject,
+			AbilityModifiers = abilityModifiers,
+			CountAsSeparateHit = countAsSeparateHit
+		});
 	}
 
 	IEnumerator Explode()

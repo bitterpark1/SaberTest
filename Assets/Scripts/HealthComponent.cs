@@ -10,11 +10,12 @@ namespace Assets.Scripts
 		int startingHp;
 
 		int currentHp;
-
+		Creature owner;
 
 		private void Awake()
 		{
-			startingHp = GetComponent<Creature>().Stats.BaseHealth;
+			owner = GetComponent<Creature>();
+			startingHp = owner.Stats.BaseHealth;
 			currentHp = startingHp;
 			EventBus<ApplyDamageEventArgs>.Subscribe(OnTakeDamageEvent);
 			EventBus<HPUpdatedEventArgs>.Invoke(new HPUpdatedEventArgs() { OldHP = currentHp, NewHP = currentHp, MaxHP = startingHp, Owner = gameObject });
@@ -42,7 +43,11 @@ namespace Assets.Scripts
 				EventBus<HPUpdatedEventArgs>.Invoke(new HPUpdatedEventArgs() { OldHP = oldHp, NewHP = currentHp, MaxHP = startingHp, Owner = gameObject });
 				if (currentHp <=0)
 				{
-					//Death
+					EventBus<CreatureKilledEventArgs>.Invoke(new CreatureKilledEventArgs() { Creature = owner });
+					if (!owner.gameObject.IsPlayer())
+					{
+						EventBus<EnemyDiedEventArgs>.Invoke(new EnemyDiedEventArgs());
+					}
 					Destroy(gameObject);
 				}
 			}

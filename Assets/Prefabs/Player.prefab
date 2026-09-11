@@ -130,7 +130,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67c1704e361354046a3fd424eb5bd4c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.PlayerController
-  abilities: []
+  abilities:
+  - {fileID: 11400000, guid: 29bddd51f61000a4592ee8053e4dd970, type: 2}
+  - {fileID: 11400000, guid: 0b5475bc26baa1444b4f52c7e6783dba, type: 2}
+  - {fileID: 11400000, guid: 0cab3e9002e31024886d519392a9e05d, type: 2}
   mainAttackAbility: {fileID: 11400000, guid: 29bddd51f61000a4592ee8053e4dd970, type: 2}
 --- !u!54 &3141771792012578275
 Rigidbody:
@@ -151,7 +154,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 311
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
@@ -185,6 +188,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Creature
   stats:
     baseHealth: 100
-    moveSpeed: 6
-    damageDealerModifiers: []
+    moveSpeed: 7
+    killReward: 0
+    damageDealerModifiers:
+    - {fileID: 11400000, guid: 868e1758cb662d84595b715197c971be, type: 2}
     damageTakerModifiers: []

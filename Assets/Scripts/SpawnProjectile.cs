@@ -20,5 +20,6 @@ public class SpawnProjectile : Ability
 	{
 		var newProjectile = Instantiate(projectile, ownerPosition, Quaternion.identity);
 		newProjectile.Initialize(damageBase, (targetCoords - ownerPosition).normalized, projectileSpeed, owner, isAOE, aoeRange, abilityModifiers);
+		EventBus<ProjectileSpawnedEventArgs>.Invoke(new ProjectileSpawnedEventArgs() { Owner = owner.gameObject });
 	}
 }

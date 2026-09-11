@@ -5,36 +5,41 @@ using UnityEngine;
 public class PlayerAbilityUI : MonoBehaviour
 {
 	[SerializeField]
-	AbilityCooldownView[] extraAbilityViews;
+	AbilityCooldownView abilityViewPrefab;
 
-	[SerializeField]
-	AbilityCooldownView mainAttackView;
+	AbilityCooldownView[] abilityViews;
+
 
 	private void Awake()
 	{
 		EventBus<AbilityCooldownEventArgs>.Subscribe(OnAbilityCooldownRefresh);
-		EventBus<PlayerAbilitiesSet>.Subscribe(OnAbilitiesSet);
+		EventBus<PlayerAbilitiesSetEventArgs>.Subscribe(OnAbilitiesSet);
 	}
 
 	private void OnDestroy()
 	{
 		EventBus<AbilityCooldownEventArgs>.Unsubscribe(OnAbilityCooldownRefresh);
-		EventBus<PlayerAbilitiesSet>.Unsubscribe(OnAbilitiesSet);
+		EventBus<PlayerAbilitiesSetEventArgs>.Unsubscribe(OnAbilitiesSet);
 	}
 
 	private void OnAbilityCooldownRefresh(AbilityCooldownEventArgs obj)
 	{
-		if (obj.AbilityIndex < extraAbilityViews.Length)
+		if (obj.AbilityIndex < abilityViews.Length)
 		{
-			extraAbilityViews[obj.AbilityIndex].SetState(obj.CooldownPercentage);
+			abilityViews[obj.AbilityIndex].SetState(obj.CooldownPercentage);
 		}
 	}
 
-	private void OnAbilitiesSet(PlayerAbilitiesSet obj)
+	private void OnAbilitiesSet(PlayerAbilitiesSetEventArgs obj)
 	{
-		for (int i = 0; i < Mathf.Min(extraAbilityViews.Length, obj.Abilities.Length); i++)
+		var abilitiesCount = obj.Abilities.Length;
+
+		abilityViews = new AbilityCooldownView[abilitiesCount];
+		for (int i = 0; i < abilitiesCount; i++)
 		{
-			extraAbilityViews[i].SetIcon(obj.Abilities[i].Icon);
+			var newView = Instantiate(abilityViewPrefab, transform);
+			newView.SetIcon(obj.Abilities[i].Icon);
+			abilityViews[i] = newView;
 		}
 	}
 }

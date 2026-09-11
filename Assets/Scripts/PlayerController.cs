@@ -26,11 +26,26 @@ namespace Assets.Scripts
 		{
 			myBody = GetComponent<Rigidbody>();
 			speed = GetComponent<Creature>().Stats.MoveSpeed;
-			abilityCooldowns = new float[abilities.Length];
-			EventBus<PlayerAbilitiesSet>.Invoke(new PlayerAbilitiesSet() { Abilities = abilities });
+			abilityCooldowns = new float[abilities.Length];	
+			EventBus<GameStateChangedEventArgs>.Subscribe(OnGameStateChanged);
 		}
 
-		
+		private void OnDestroy()
+		{
+			EventBus<GameStateChangedEventArgs>.Unsubscribe(OnGameStateChanged);
+		}
+
+		private void OnGameStateChanged(GameStateChangedEventArgs obj)
+		{
+			if (obj.NewState == GameStateManager.State.Gameplay)
+			{
+				gameObject.SetActive(true);
+				EventBus<PlayerAbilitiesSetEventArgs>.Invoke(new PlayerAbilitiesSetEventArgs() { Abilities = abilities });
+			} else
+			{
+				gameObject.SetActive(false);
+			}
+		}
 
 		private void Update()
 		{
@@ -48,17 +63,17 @@ namespace Assets.Scripts
 
 		private void UseAbilities()
 		{
-			if (Input.GetMouseButtonDown(0))
+			if (Input.GetMouseButton(0))
 			{
 				TryUseAbility(0);
 			}
 
-			if (Input.GetKeyDown(KeyCode.Alpha1))
+			if (Input.GetMouseButtonDown(1))
 			{
 				TryUseAbility(1);
 			}
 
-			if (Input.GetKeyDown(KeyCode.Alpha2))
+			if (Input.GetKeyDown(KeyCode.LeftShift))
 			{
 				TryUseAbility(2);
 			}

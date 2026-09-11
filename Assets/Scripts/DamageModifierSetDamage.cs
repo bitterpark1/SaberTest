@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(fileName = "DamageModifierMult", menuName = "ScriptableObjects/DamageModifiers/DamageModifierMult")]
-public class DamageModifierSet : DamageModifier
+[CreateAssetMenu(fileName = "DamageModifierSetDamage", menuName = "ScriptableObjects/DamageModifiers/DamageModifierSetDamage")]
+public class DamageModifierSetDamage : DamageModifier
 {
 	[SerializeField]
 	int setDamageToNumber;

@@ -2,42 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IEventArgs { }
-
-public struct ApplyDamageEventArgs : IEventArgs
-{
-	public int Damage;
-	public GameObject ApplyTo;
-}
-
-public struct HPUpdatedEventArgs : IEventArgs
-{
-	public GameObject Owner;
-	public int OldHP;
-	public int NewHP;
-	public int MaxHP;
-}
-
-public struct DamageDealtEventArgs : IEventArgs
-{
-	public int BaseDamage;
-	public GameObject Target;
-	public Stats DamageDealerStats;
-	public Stats DamageTakerStats;
-	public DamageModifier[] AbilityModifiers;
-}
-
-public struct AbilityCooldownEventArgs : IEventArgs
-{
-	public float CooldownPercentage;
-	public int AbilityIndex;
-}
-
-public struct PlayerAbilitiesSet : IEventArgs
-{
-	public Ability[] Abilities;
-}
-
 public static class EventBus<T> where T : IEventArgs
 {
 	static Action<T> subDelegates;
